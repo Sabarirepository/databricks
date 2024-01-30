@@ -1,8 +1,9 @@
 // Databricks notebook source
-var filename = dbutils.widgets.get("filename")
+// var filename = dbutils.widgets.get("filename")
+var filename = "test/Batting"
 val filePath = s"/FileStore/tables/$filename.csv"
 println(filePath)
-
+var filename1 = "test/Batting1"
 var filename1 = dbutils.widgets.get("filename1")
 val filePath1 = s"/FileStore/tables/$filename1.csv"
 println(filePath1)

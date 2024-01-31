@@ -1,0 +1,10 @@
+dataengineering:
+  outputs:
+    dev:
+      host: dbc-0a44ecf1-206f.cloud.databricks.com
+      http_path: /sql/1.0/warehouses/08b6c508acb4d100
+      schema: aswcourse
+      threads: 3
+      token: "dapi245ab55ef2d5fa706d335121ba19d139"
+      type: databricks
+  target: dev

@@ -7,18 +7,16 @@
     Try changing "table" to "view" below
 */
 
-{{ config(materialized='table') }}
+{{ config(schema='datalayer',alias='stg_file_datalayer',materialized='incremental',prehook=["truncate table {this}"]) }}
 
 with source_data as (
 
-    select 1 as id
-    union all
-    select null as id
+    select * from dbtsample.dbt_bronze.stg_file_datalayer
 
 )
 
-select *
-from source_data
+select sd.*
+from source_data sd
 
 /*
     Uncomment the line below to remove records with null `id` values

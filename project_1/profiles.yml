@@ -3,7 +3,7 @@ dataengineering:
     dev:
       host: dbc-06ba6979-ff9d.cloud.databricks.com
       http_path: /sql/1.0/warehouses/71d04e1dc3ca6af4
-      schema: dbt_bronze
+      schema: dbtsample
       threads: 3
       token: "dapic411cd83d2969b647f29d4891497c5f9"
       type: databricks

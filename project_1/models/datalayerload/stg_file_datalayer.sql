@@ -7,11 +7,11 @@
     Try changing "table" to "view" below
 */
 
-{{ config(schema='datalayer',alias='stg_file_datalayer',materialized='incremental',prehook=["truncate table {this}"]) }}
+{{ config(schema='datalayer',alias='stg_file_datalayer',materialized='incremental',pre_hook=["truncate table {{this}}"]) }}
 
 with source_data as (
 
-    select * from dbtsample.dbt_bronze.stg_file_datalayer
+    select * from dbtsample.dbt_bronze.stg_file
 
 )
 

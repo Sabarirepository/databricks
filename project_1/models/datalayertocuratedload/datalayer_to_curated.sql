@@ -11,11 +11,12 @@
 
 with source_data as (
 
-    select *,row_number() over(partition by emp_no) as row_num from dbtsample.dbt_bronze.stg_file_datalayer
+    select d.emp_no,d.emp_name,d.emp_age,row_number() over(partition by emp_no order by emp_no) as row_num 
+	from {{ ref('stg_file_datalayer') }} d
 
 )
 
-select sd.*,1 as batch_nbr,current_timestamp as created_at,current_timestamp as updated_at
+select sd.emp_no,sd.emp_name,sd.emp_age,1 as batch_nbr,current_timestamp as created_at,current_timestamp as udpated_at
 from source_data sd
 where row_num=1
 /*

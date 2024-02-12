@@ -112,3 +112,14 @@ sourcedf.write
   .format("delta")
   .mode("append")
   .saveAsTable(table)
+
+
+
+dbutils.jobs.taskValues.set(key = 'name', value = 'Some test User')
+dbt run {{tasks.proj1_stag_to_dl1.values.name}}
+
+
+output error:
+ dbt run Some test User
+
+

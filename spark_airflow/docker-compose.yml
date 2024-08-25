@@ -1,0 +1,111 @@
+version: "3.8"
+services:
+    postgres:
+        image: postgres:13.6
+        networks:
+            - default_net
+        environment:
+            - POSTGRES_USER=airflow
+            - POSTGRES_PASSWORD=airflow
+            - POSTGRES_DB=airflow
+        volumes:
+            - "../sandbox/postgres:/var/lib/postgresql/data"
+        ports:
+            - "5432:5432"
+        healthcheck:
+            test: ["CMD", "pg_isready", "-U", "airflow"]
+            interval: 10s
+            retries: 5
+
+    airflow-init:
+        image: apache/airflow:2.7.3
+        depends_on:
+            - postgres
+        networks:
+            - default_net
+        environment:
+            - AIRFLOW__CORE__EXECUTOR=LocalExecutor
+            - AIRFLOW__DATABASE__SQL_ALCHEMY_CONN=postgresql+psycopg2://airflow:airflow@postgres/airflow
+        command: bash -c "airflow db init && airflow users create --username admin --firstname Admin --lastname User --role Admin --email admin@example.com --password admin"
+        volumes:
+            - ../sandbox/dags:/opt/airflow/dags
+            - ../sandbox/spark/app:/opt/airflow/spark/app
+            - ../sandbox/spark/resources:/opt/airflow/spark/resources
+
+    airflow-webserver:
+        image: apache/airflow:2.7.3
+        restart: always
+        networks:
+            - default_net
+        depends_on:
+            postgres:
+                condition: service_healthy
+            airflow-init:
+                condition: service_completed_successfully
+        environment:
+            - AIRFLOW__CORE__EXECUTOR=LocalExecutor
+            - AIRFLOW__DATABASE__SQL_ALCHEMY_CONN=postgresql+psycopg2://airflow:airflow@postgres/airflow
+            - AIRFLOW__WEBSERVER__SECRET_KEY=your_secret_key_here
+        volumes:
+            - ../sandbox/dags:/opt/airflow/dags
+            - ../sandbox/spark/app:/opt/airflow/spark/app
+            - ../sandbox/spark/resources:/opt/airflow/spark/resources
+        ports:
+            - "8080:8080"
+        command: webserver
+        healthcheck:
+            test: ["CMD", "curl", "--fail", "http://localhost:8080/health"]
+            interval: 30s
+            timeout: 30s
+            retries: 5
+            start_period: 30s
+
+    airflow-scheduler:
+        image: apache/airflow:2.7.3
+        restart: always
+        networks:
+            - default_net
+        depends_on:
+            - airflow-webserver
+        environment:
+            - AIRFLOW__CORE__EXECUTOR=LocalExecutor
+            - AIRFLOW__DATABASE__SQL_ALCHEMY_CONN=postgresql+psycopg2://airflow:airflow@postgres/airflow
+            - AIRFLOW__WEBSERVER__SECRET_KEY=your_secret_key_here
+        volumes:
+            - ../sandbox/dags:/opt/airflow/dags
+            - ../sandbox/spark/app:/opt/airflow/spark/app
+            - ../sandbox/spark/resources:/opt/airflow/spark/resources
+        command: scheduler
+
+    spark-master:
+        image: bitnami/spark:3.2.1
+        hostname: spark-master
+        networks:
+            - default_net
+        ports:
+            - "8090:8080"
+            - "7077:7077"
+        volumes:
+            - ../sandbox/spark/app:/opt/bitnami/spark/app
+            - ../sandbox/spark/resources:/opt/bitnami/spark/resources
+        environment:
+            - SPARK_MODE=master
+
+    spark-worker:
+        image: bitnami/spark:3.2.1
+        networks:
+            - default_net
+        depends_on:
+            - spark-master
+        environment:
+            - SPARK_MODE=worker
+            - SPARK_MASTER_URL=spark://spark-master:7077
+            - SPARK_WORKER_MEMORY=1G
+            - SPARK_WORKER_CORES=1
+        volumes:
+            - ../sandbox/spark/app:/opt/bitnami/spark/app
+            - ../sandbox/spark/resources:/opt/bitnami/spark/resources
+
+networks:
+    default_net:
+        driver: bridge

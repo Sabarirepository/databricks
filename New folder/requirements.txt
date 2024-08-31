@@ -1,0 +1,8 @@
+celery
+kombu
+tornado
+werkzeug
+pyspark==3.2.1
+SQLAlchemy
+wtforms
+apache-airflow-providers-apache-spark==2.1.3

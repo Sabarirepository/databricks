@@ -1,0 +1,45 @@
+version: "3.8"
+services:
+  spark-master:
+    build:
+      context: .
+      dockerfile: Dockerfile-spark
+    hostname: spark-master
+    networks:
+      - default_net
+    ports:
+      - "8090:8080"  # Spark Web UI
+      - "7077:7077"  # Spark Master
+      - "5000:5000"  # Flask application
+    volumes:
+      - ./sandbox/spark/app:/opt/bitnami/spark/app
+      - ./sandbox/spark/resources:/opt/bitnami/spark/resources
+      - ./spark-defaults.conf:/opt/bitnami/spark/conf/spark-defaults.conf
+    environment:
+      - SPARK_MODE=master
+      - SPARK_CONF_DIR=/opt/bitnami/spark/conf
+    command: /opt/bitnami/scripts/spark/entrypoint.sh /opt/bitnami/scripts/spark/run.sh
+
+  spark-worker:
+    build:
+      context: .
+      dockerfile: Dockerfile-spark
+    networks:
+      - default_net
+    depends_on:
+      - spark-master
+    environment:
+      - SPARK_MODE=worker
+      - SPARK_MASTER_URL=spark://spark-master:7077
+      - SPARK_WORKER_MEMORY=8G
+      - SPARK_WORKER_CORES=8
+      - SPARK_CONF_DIR=/opt/bitnami/spark/conf
+    volumes:
+      - ./sandbox/spark/app:/opt/bitnami/spark/app
+      - ./sandbox/spark/resources:/opt/bitnami/spark/resources
+      - ./spark-defaults.conf:/opt/bitnami/spark/conf/spark-defaults.conf
+    command: /opt/bitnami/scripts/spark/entrypoint.sh /opt/bitnami/scripts/spark/run.sh
+
+networks:
+  default_net:
+    driver: bridge

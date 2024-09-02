@@ -17,10 +17,15 @@ def analyze_sales():
         .getOrCreate()
 
     try:
-        
         # Query Iceberg tables
         df_vendor1 = spark.sql("SELECT * FROM local.default.vendorBucket WHERE status = 'A'")
-
+        df_vendor1.cache()
+        print(df_vendor1.count())
+        
+        if df_vendor1.count() == 0:
+            print("no data")
+        else:
+            print("data is available:")
         print("Filtered Vendor Data:")
         df_vendor1.show()
         
@@ -34,7 +39,6 @@ def analyze_sales():
         print("Tables in local.default:")
         spark.sql("SHOW TABLES IN local.default").show()
 
-        
     except Exception as e:
         print(f"An error occurred: {str(e)}")
         raise

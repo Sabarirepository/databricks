@@ -27,7 +27,7 @@ docker exec docker_spark_spark-master_1 \
     spark-submit \
     --master spark://spark-master:7077 \
     --name SalesAnalysis \
-    /opt/bitnami/spark/app/sales_analysis_iceberg.py
+    /opt/bitnami/spark/app/sales_analysis_iceberg_query_api.py
 
 # Display the results
 echo "Analysis Results:"
